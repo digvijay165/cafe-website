@@ -57,6 +57,7 @@ async function connect(url = process.env.DATABASE_URL) {
   await driver.exec(SCHEMA);
   await createAppRole();
   await seed(driver);
+  await require('./settings').load(driver);
   return driver;
 }
 

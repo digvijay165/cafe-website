@@ -7,11 +7,16 @@ create table if not exists users (
   phone text not null default '',
   password_hash text not null,
   password_salt text not null,
-  role text not null default 'customer' check (role in ('customer', 'staff')),
+  role text not null default 'customer',
   email_verified_at timestamptz,
   onboarded_at timestamptz,
   created_at timestamptz not null default now()
 );
+
+-- Roles: customer, staff (order board, sold-out switches), owner (everything, including the menu,
+-- hours, café details and team). Recreated so databases made before the owner role pick it up.
+alter table users drop constraint if exists users_role_check;
+alter table users add constraint users_role_check check (role in ('customer', 'staff', 'owner'));
 
 create table if not exists sessions (
   token_hash text primary key,
@@ -68,6 +73,12 @@ create table if not exists order_items (
   quantity integer not null check (quantity between 1 and 20)
 );
 
+-- Café details the owner can edit (name, address, phone...). Values override the env defaults.
+create table if not exists settings (
+  key text primary key,
+  value text not null
+);
+
 create index if not exists orders_user_idx on orders (user_id, created_at desc);
 create index if not exists order_items_order_idx on order_items (order_id);
 
@@ -98,8 +109,8 @@ alter table order_items force row level security;
 
 drop policy if exists orders_owner on orders;
 create policy orders_owner on orders
-  using (user_id::text = current_setting('app.user_id', true) or current_setting('app.role', true) = 'staff')
-  with check (user_id::text = current_setting('app.user_id', true) or current_setting('app.role', true) = 'staff');
+  using (user_id::text = current_setting('app.user_id', true) or current_setting('app.role', true) in ('staff', 'owner'))
+  with check (user_id::text = current_setting('app.user_id', true) or current_setting('app.role', true) in ('staff', 'owner'));
 
 drop policy if exists order_items_owner on order_items;
 create policy order_items_owner on order_items

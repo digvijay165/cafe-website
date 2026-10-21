@@ -15,6 +15,7 @@ import { Order, Orders } from './pages/Orders';
 import { ForgotPassword, Login, ResetPassword, Signup, VerifyEmail, Welcome } from './pages/Auth';
 import Account from './pages/Account';
 import Staff from './pages/Staff';
+import Owner from './pages/Owner';
 import { NotFound, Privacy, Terms } from './pages/Legal';
 
 installErrorTracking();
@@ -41,6 +42,7 @@ function App() {
               <Route path="welcome" element={<Welcome />} />
               <Route path="account" element={<Account />} />
               <Route path="staff" element={<Staff />} />
+              <Route path="owner" element={<Owner />} />
               <Route path="privacy" element={<Privacy />} />
               <Route path="terms" element={<Terms />} />
               <Route path="*" element={<NotFound />} />

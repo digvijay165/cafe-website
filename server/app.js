@@ -17,7 +17,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const CLIENT_ROUTES = [
   /^\/$/, /^\/menu$/, /^\/visit$/, /^\/cart$/, /^\/checkout$/, /^\/orders$/, /^\/orders\/[0-9a-f-]{36}$/i,
   /^\/login$/, /^\/signup$/, /^\/forgot-password$/, /^\/reset-password$/, /^\/verify-email$/, /^\/account$/,
-  /^\/welcome$/, /^\/staff$/, /^\/privacy$/, /^\/terms$/
+  /^\/welcome$/, /^\/staff$/, /^\/owner$/, /^\/privacy$/, /^\/terms$/
 ];
 const ORDER_STATUSES = ['received', 'preparing', 'ready', 'collected', 'cancelled'];
 
@@ -46,9 +46,16 @@ function requireUser(req) {
   return req.user;
 }
 
+// Owners can do everything staff can.
 function requireStaff(req) {
   const user = requireUser(req);
-  if (user.role !== 'staff') fail(403, 'This page is for café staff only.');
+  if (user.role !== 'staff' && user.role !== 'owner') fail(403, 'This page is for café staff only.');
+  return user;
+}
+
+function requireOwner(req) {
+  const user = requireUser(req);
+  if (user.role !== 'owner') fail(403, 'Only the café owner can do this.');
   return user;
 }
 
@@ -188,7 +195,7 @@ function createApp() {
     const { rows: existing } = await db.query('select id from users where email = $1', [email]);
     if (existing.length) fail(409, 'An account with this email already exists. Try logging in instead.', { fields: { email: 'Already registered.' } });
     const { salt, hash } = auth.hashPassword(req.body.password);
-    const role = config.staffEmails.includes(email) ? 'staff' : 'customer';
+    const role = auth.configuredRole(email, 'customer');
     const { rows: [user] } = await db.query(
       'insert into users (name, email, password_hash, password_salt, role) values ($1, $2, $3, $4, $5) returning *',
       [name, email, hash, salt, role]
@@ -209,6 +216,11 @@ function createApp() {
       fail(401, 'That email and password do not match.');
     }
     limits.reset(`login-email:${email}`);
+    const role = auth.configuredRole(user.email, user.role);
+    if (role !== user.role) {
+      await db.query('update users set role = $1 where id = $2', [role, user.id]);
+      user.role = role;
+    }
     await auth.startSession(res, user.id);
     res.json({ user: auth.publicUser(user) });
   }));
@@ -443,6 +455,8 @@ function createApp() {
     ]);
     res.json({ views: views.rows, pages: pages.rows, errors: errors.rows, today: sales.rows[0] });
   }));
+
+  require('./owner-routes')(app, { route, fail, requireOwner, checkFields, clean, ordersWithItems, ORDER_STATUSES, EMAIL });
 
   // ---- Analytics and error tracking -----------------------------------------------------------
 

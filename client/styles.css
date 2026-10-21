@@ -144,6 +144,29 @@ h1, h2, h3, .brand, .display-4, .display-6, .page-title, .section-title { font-f
 .bar { flex: 1; max-width: 64px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; gap: .2rem; }
 .bar span { width: 100%; background: var(--cafe-brown); border-radius: .4rem .4rem 0 0; min-height: 3px; }
 
+/* Owner dashboard */
+.owner-tabs { flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; }
+.owner-tabs .nav-link { white-space: nowrap; }
+.kpi { font-family: 'Fraunces', Georgia, serif; font-size: 1.8rem; font-weight: 600; line-height: 1.2; margin: .2rem 0; }
+.bars-wide .bar { max-width: 40px; }
+.bars-wide small { font-size: .7rem; }
+.owner-list { display: grid; gap: .5rem; }
+.owner-row { display: flex; align-items: center; gap: .9rem; flex-wrap: wrap; padding: .75rem 1rem; background: var(--cafe-paper); border: 1px solid var(--cafe-line); border-radius: .9rem; }
+.owner-row:has(.owner-row-main) { padding: 0; display: block; }
+.owner-row-main { display: flex; align-items: center; gap: .9rem; width: 100%; padding: .75rem 1rem; background: none; border: 0; color: inherit; border-radius: .9rem; }
+.owner-row-main:hover { background: #fbf5ec; }
+.owner-row-detail { padding: .25rem 1rem 1rem; border-top: 1px dashed var(--cafe-line); }
+.owner-amount { min-width: 5rem; text-align: right; }
+.owner-item.sold-out > .flex-grow-1 { opacity: .55; }
+.owner-item .move { line-height: 1; color: var(--cafe-muted); text-decoration: none; font-size: .75rem; }
+.owner-item .move:disabled { opacity: .25; }
+.item-form { border-color: var(--cafe-brown); }
+.hours-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem 1rem; padding: .6rem 0; border-bottom: 1px solid var(--cafe-line); }
+.hours-row .form-check { min-width: 9rem; }
+.hours-row input[type=time] { width: 8rem; }
+.owner-table th { font-size: .8rem; text-transform: uppercase; letter-spacing: .04em; color: var(--cafe-muted); font-weight: 600; }
+.owner-table > :not(caption) > * > * { padding: .75rem 1rem; }
+
 /* Shared states */
 .empty-icon { font-size: 2.8rem; width: 5rem; height: 5rem; margin: 0 auto; display: grid; place-items: center; background: #f3e8da; border-radius: 50%; }
 .skeleton { border-radius: 1rem; background: linear-gradient(90deg, #f1e9df 25%, #f8f2ea 50%, #f1e9df 75%); background-size: 200% 100%; animation: shimmer 1.3s infinite; }

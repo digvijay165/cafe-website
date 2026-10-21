@@ -63,10 +63,25 @@ async function loadUser(req, res, next) {
     );
     req.user = rows[0] || null;
     if (!req.user) setCookie(res, '', 0);
+    // Accounts listed in OWNER_EMAILS / STAFF_EMAILS are promoted the next time they visit, so
+    // adding an email on the host works for people who signed up earlier too.
+    const role = req.user && configuredRole(req.user.email, req.user.role);
+    if (req.user && role !== req.user.role) {
+      await db.query('update users set role = $1 where id = $2', [role, req.user.id]);
+      req.user.role = role;
+    }
     next();
   } catch (error) {
     next(error);
   }
+}
+
+// The role an email should have given the env lists. Only ever promotes: demoting is done by the
+// owner from the dashboard.
+const RANK = { customer: 0, staff: 1, owner: 2 };
+function configuredRole(email, current) {
+  const wanted = config.ownerEmails.includes(email) ? 'owner' : config.staffEmails.includes(email) ? 'staff' : 'customer';
+  return RANK[wanted] > RANK[current] ? wanted : current;
 }
 
 async function issueToken(userId, purpose) {
@@ -97,4 +112,4 @@ function publicUser(user) {
   };
 }
 
-module.exports = { hashPassword, checkPassword, startSession, endSession, loadUser, issueToken, useToken, publicUser };
+module.exports = { configuredRole, hashPassword, checkPassword, startSession, endSession, loadUser, issueToken, useToken, publicUser };

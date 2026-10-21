@@ -8,6 +8,7 @@ module.exports = {
   // RENDER_EXTERNAL_URL is set automatically on Render.
   publicUrl: (env.PUBLIC_URL || env.RENDER_EXTERNAL_URL || `http://localhost:${env.PORT || 3000}`).replace(/\/$/, ''),
   staffEmails: (env.STAFF_EMAILS || '').split(',').map(email => email.trim().toLowerCase()).filter(Boolean),
+  ownerEmails: (env.OWNER_EMAILS || '').split(',').map(email => email.trim().toLowerCase()).filter(Boolean),
   cafe: {
     name: env.CAFE_NAME || 'Little Lantern Café',
     tagline: env.CAFE_TAGLINE || 'Slow coffee, warm bakes and a quiet corner to sit in.',
