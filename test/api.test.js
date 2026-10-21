@@ -1,6 +1,7 @@
 // End-to-end API tests against an in-memory Postgres (PGlite). Emails are captured from the log.
 process.env.DATABASE_URL = 'memory://';
 process.env.STAFF_EMAILS = 'staff@example.com';
+process.env.OWNER_EMAILS = 'owner@example.com';
 // Each simulated person gets their own IP (via X-Forwarded-For) so per-IP rate limits do not collide.
 process.env.TRUST_PROXY = '1';
 
@@ -165,6 +166,84 @@ test('deleting an account removes it and its orders', async () => {
   assert.equal((await api('GET', '/api/auth/me')).body.user, null);
   const { rows } = await db.query("select count(*)::int as n from users where email = 'leaving@example.com'");
   assert.equal(rows[0].n, 0);
+});
+
+test('only the owner can edit the menu, hours, details and team', async () => {
+  const staff = await verifiedCustomer('staff2@example.com');
+  const owner = await verifiedCustomer('owner@example.com');
+  assert.equal((await owner('GET', '/api/auth/me')).body.user.role, 'owner');
+  const item = { category: 'Specials', name: 'Rose milk', description: 'Chilled, with basil seeds.', priceCents: 15000, tags: ['gluten-free', 'nope'] };
+
+  // Staff and customers are refused.
+  assert.equal((await staff('POST', '/api/owner/menu', item)).status, 403);
+  assert.equal((await staff('GET', '/api/owner/overview')).status, 403);
+
+  // Validation errors come back per field.
+  const bad = await owner('POST', '/api/owner/menu', { name: 'x', category: '', priceCents: -5 });
+  assert.equal(bad.status, 400);
+  assert.deepEqual(Object.keys(bad.body.fields).sort(), ['category', 'name', 'priceCents']);
+
+  // Add, edit, reorder and delete an item; the public menu follows.
+  const created = await owner('POST', '/api/owner/menu', item);
+  assert.equal(created.status, 201);
+  assert.deepEqual(created.body.item.tags, ['gluten-free']);
+  assert.equal(created.body.item.slug, 'rose-milk');
+  const second = await owner('POST', '/api/owner/menu', { ...item, name: 'Rose milk' });
+  assert.equal(second.body.item.slug, 'rose-milk-2');
+  const edited = await owner('PATCH', `/api/owner/menu/${created.body.item.id}`, { priceCents: 16000, name: 'Rose milk (large)' });
+  assert.equal(edited.body.item.priceCents, 16000);
+  const moved = await owner('POST', `/api/owner/menu/${second.body.item.id}/move`, { direction: 'up' });
+  const specials = moved.body.items.filter(i => i.category === 'Specials').map(i => i.id);
+  assert.deepEqual(specials, [second.body.item.id, created.body.item.id]);
+  assert.ok((await client()('GET', '/api/menu')).body.items.some(i => i.name === 'Rose milk (large)' && i.priceCents === 16000));
+  assert.equal((await owner('DELETE', `/api/owner/menu/${second.body.item.id}`)).status, 200);
+  assert.equal((await owner('DELETE', `/api/owner/menu/${second.body.item.id}`)).status, 404);
+
+  // Hours and café details.
+  const badHours = await owner('PUT', '/api/owner/hours', { days: [{ day: 1, open: true, opens: '18:00', closes: '09:00' }] });
+  assert.equal(badHours.status, 400);
+  const hoursBefore = (await owner('GET', '/api/info')).body.hours.week;
+  const allDay = Array.from({ length: 7 }, (_, day) => ({ day, open: true, opens: '00:00', closes: '23:59' }));
+  assert.equal((await owner('PUT', '/api/owner/hours', { days: allDay.map((d, i) => (i === 1 ? { ...d, open: false } : d)) })).status, 200);
+  const week = (await client()('GET', '/api/info')).body.hours.week;
+  assert.equal(week[1].opens, null);
+  assert.equal(week[2].opens, '00:00');
+  await owner('PUT', '/api/owner/hours', { days: allDay });
+  assert.equal(hoursBefore.length, 7);
+
+  const badSettings = await owner('PATCH', '/api/owner/settings', { phone: 'call me', latitude: 200 });
+  assert.deepEqual(Object.keys(badSettings.body.fields).sort(), ['latitude', 'phone']);
+  const saved = await owner('PATCH', '/api/owner/settings', { name: 'Lantern Café Indiranagar', phone: '+91 80 1111 2222' });
+  assert.equal(saved.body.settings.name, 'Lantern Café Indiranagar');
+  assert.equal((await client()('GET', '/api/info')).body.cafe.phone, '+91 80 1111 2222');
+  const { rows } = await db.query("select value from settings where key = 'name'");
+  assert.equal(rows[0].value, 'Lantern Café Indiranagar');
+
+  // Team: promote a customer, refuse unknown emails and self-demotion.
+  await verifiedCustomer('newhire@example.com');
+  const promoted = await owner('POST', '/api/owner/team', { email: 'newhire@example.com', role: 'staff' });
+  assert.ok(promoted.body.team.some(member => member.email === 'newhire@example.com' && member.role === 'staff'));
+  assert.equal((await owner('POST', '/api/owner/team', { email: 'ghost@example.com', role: 'staff' })).status, 404);
+  assert.equal((await owner('POST', '/api/owner/team', { email: 'owner@example.com', role: 'customer' })).status, 400);
+});
+
+test('the owner sees every order, sales and customers', async () => {
+  const buyer = await verifiedCustomer('regular2@example.com');
+  const { body: { order } } = await placeOrder(buyer);
+  const owner = client();
+  await owner('POST', '/api/auth/login', { email: 'owner@example.com', password: 'correct horse' });
+  const orders = await owner('GET', '/api/owner/orders?days=30');
+  assert.ok(orders.body.orders.some(o => o.id === order.id && o.customer.email === 'regular2@example.com'));
+  const byNumber = await owner('GET', `/api/owner/orders?q=%23${order.number}`);
+  assert.deepEqual(byNumber.body.orders.map(o => o.id), [order.id]);
+  const overview = await owner('GET', '/api/owner/overview?days=7');
+  assert.ok(overview.body.totals.orders >= 1);
+  assert.ok(overview.body.topItems.length >= 1);
+  const customers = await owner('GET', '/api/owner/customers?q=regular2');
+  assert.equal(customers.body.customers[0].orders, 1);
+  assert.equal(customers.body.customers[0].spentCents, order.totalCents);
+  // Owners can also run the staff order board.
+  assert.equal((await owner('PATCH', `/api/staff/orders/${order.id}`, { status: 'preparing' })).body.order.status, 'preparing');
 });
 
 test('/healthz answers uptime monitors, without rate limits', async () => {

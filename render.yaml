@@ -20,7 +20,10 @@ services:
         fromDatabase:
           name: little-lantern-db
           property: connectionString
-      # Emails that become admins (staff) when they sign up.
+      # Emails that get the owner dashboard (menu, hours, details, team) when they sign up or log in.
+      - key: OWNER_EMAILS
+        sync: false
+      # Emails that get the staff order board.
       - key: STAFF_EMAILS
         sync: false
       # Optional: https://resend.com key for real emails. Without it, links appear in the Render logs.

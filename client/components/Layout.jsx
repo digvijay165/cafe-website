@@ -52,7 +52,8 @@ function Navbar() {
             <li className="nav-item"><NavLink className={link} to="/menu">Menu</NavLink></li>
             <li className="nav-item"><NavLink className={link} to="/visit">Hours &amp; location</NavLink></li>
             {user && <li className="nav-item"><NavLink className={link} to="/orders">My orders</NavLink></li>}
-            {user?.role === 'staff' && <li className="nav-item"><NavLink className={link} to="/staff">Staff</NavLink></li>}
+            {(user?.role === 'staff' || user?.role === 'owner') && <li className="nav-item"><NavLink className={link} to="/staff">Staff</NavLink></li>}
+            {user?.role === 'owner' && <li className="nav-item"><NavLink className={link} to="/owner">Owner</NavLink></li>}
           </ul>
           <ul className="navbar-nav align-items-lg-center">
             {info && <li className="nav-item d-none d-xl-block me-3"><OpenBadge hours={info.hours} /></li>}

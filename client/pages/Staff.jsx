@@ -145,5 +145,5 @@ function StaffPage() {
 }
 
 export default function Staff() {
-  return <RequireUser staff><StaffPage /></RequireUser>;
+  return <RequireUser roles={['staff', 'owner']}><StaffPage /></RequireUser>;
 }

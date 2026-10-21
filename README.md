@@ -49,12 +49,13 @@
 </td>
 <td width="50%" valign="top">
 
-### 🧑‍🍳 For staff
-- **Live order board**, refreshing every 15 seconds, with notes and allergies highlighted
-- **One-tap status changes**: start making, mark ready, collected, cancel
-- **Sold-out switches**: customers can't order an item once it's switched off
-- **Insights**: page views, top pages, last-24 h orders and recent errors
-- Admin accounts set by email (`STAFF_EMAILS`) or with `npm run admin:create`
+### 🧑‍🍳 For staff and the owner
+- **Staff** get a live order board (refreshes every 15 s, with notes and allergies highlighted), one-tap status changes, sold-out switches and site insights
+- The **owner dashboard** adds:
+  - **Sales overview:** revenue by day, average order and best sellers
+  - **Order history:** search by name, email or `#number`, and filter by status and date
+  - **Menu editor:** add, edit, delete and reorder items, set prices, dietary tags and new categories
+  - **Opening hours, café details** (name, address, phone, map pin), **team roles** and the **customer list**
 
 </td>
 </tr>
@@ -122,19 +123,25 @@ Open http://localhost:3000. Data is saved in `./data/pgdata`. Account and order 
 | `npm run backup` / `npm run restore -- <file> --yes` | JSON backup and restore of every table |
 | `node scripts/screenshots.js` | Regenerate the screenshots above |
 
-### Admin accounts
+### Owner and staff accounts
 
-Admins have the `staff` role and see a **Staff** link in the menu bar. Either list their email in `STAFF_EMAILS` before they sign up, or create one directly (the password is hashed and never saved in a file):
+| Role | Sees | How to get it |
+| --- | --- | --- |
+| **Owner** | Owner dashboard + staff board | Email in `OWNER_EMAILS`, or added by another owner under **Team** |
+| **Staff** | Order board, sold-out switches, insights | Email in `STAFF_EMAILS`, or added by an owner under **Team** |
+| **Customer** | Ordering and their own orders | Everyone else |
+
+Accounts listed in `OWNER_EMAILS` / `STAFF_EMAILS` are promoted when they sign up or next log in. You can also create an account directly; the password is hashed and never saved in a file:
 
 ```bash
-ADMIN_NAME="Your Name" ADMIN_EMAIL=you@example.com ADMIN_PASSWORD='choose-a-password' npm run admin:create
+ADMIN_NAME="Your Name" ADMIN_EMAIL=you@example.com ADMIN_PASSWORD='choose-a-password' npm run admin:create   # ADMIN_ROLE=staff for staff
 ```
 
 ## 🌍 Deploy
 
 <a href="https://render.com/deploy?repo=https://github.com/digvijay165/cafe-website"><img src="https://render.com/images/deploy-to-render-button.svg" alt="Deploy to Render"></a>
 
-The button reads [`render.yaml`](render.yaml) and creates a free web service plus a free PostgreSQL database. When asked, set `STAFF_EMAILS` to your email, then sign up on the live site with that email to get the staff dashboard. Free Render databases expire after 30 days unless upgraded, and free web services sleep after 15 minutes without visits.
+The button reads [`render.yaml`](render.yaml) and creates a free web service plus a free PostgreSQL database. When asked, set `OWNER_EMAILS` to your email, then sign up on the live site with that email to get the owner dashboard. Free Render databases expire after 30 days unless upgraded, and free web services sleep after 15 minutes without visits.
 
 **Docker** (NGINX + app + Postgres on one server):
 
