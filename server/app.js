@@ -86,6 +86,31 @@ async function ordersWithItems(q, orders) {
   return orders.map(order => serializeOrder(order, rows));
 }
 
+// 200 with "status": "ok" when the app can reach its database, 503 otherwise. The database check
+// gives up after 3 seconds so a monitor sees a clear failure instead of a hung request.
+const STARTED_AT = Date.now();
+async function health(req, res) {
+  const started = Date.now();
+  let database = 'ok';
+  let timer;
+  try {
+    await Promise.race([db.ping(), new Promise((_, reject) => { timer = setTimeout(() => reject(new Error('timeout')), 3000); })]);
+  } catch (error) {
+    database = error.message === 'timeout' ? 'timeout' : 'unreachable';
+  } finally {
+    clearTimeout(timer);
+  }
+  const ok = database === 'ok';
+  res.status(ok ? 200 : 503).set('Cache-Control', 'no-store').json({
+    status: ok ? 'ok' : 'error',
+    database,
+    driver: db.kind,
+    latencyMs: Date.now() - started,
+    uptimeSeconds: Math.round((Date.now() - STARTED_AT) / 1000),
+    email: mailer.enabled ? 'resend' : 'log'
+  });
+}
+
 function securityHeaders(req, res, next) {
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
@@ -113,6 +138,9 @@ function createApp() {
   if (process.env.TRUST_PROXY) app.set('trust proxy', Number(process.env.TRUST_PROXY) || process.env.TRUST_PROXY);
 
   app.use(securityHeaders);
+  // For uptime monitors (UptimeRobot) and the host's health checks. Registered before the API
+  // middleware so it skips rate limits and cookies; GET and HEAD both work.
+  app.get('/healthz', health);
   app.use('/api', sameOrigin, express.json({ limit: '32kb' }), auth.loadUser);
   app.use('/api', (req, res, next) => {
     try { limit(req, `api:${req.ip}`, 300, 60_000); next(); } catch (error) { next(error); }
@@ -120,11 +148,7 @@ function createApp() {
 
   // ---- Site information ----------------------------------------------------------------------
 
-  app.get('/api/health', route(async (req, res) => {
-    const started = Date.now();
-    await db.ping();
-    res.json({ ok: true, database: db.kind, latencyMs: Date.now() - started, email: mailer.enabled ? 'resend' : 'log' });
-  }));
+  app.get('/api/health', health);
 
   app.get('/api/info', route(async (req, res) => {
     res.json({ cafe: config.cafe, hours: hours.status(await hoursRows(), new Date(), config.cafe.timeZone) });

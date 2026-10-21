@@ -8,7 +8,7 @@ services:
     # NODE_ENV=production would make npm skip the build tools, so include them explicitly.
     buildCommand: npm ci --include=dev && npm run build
     startCommand: npm start
-    healthCheckPath: /api/health
+    healthCheckPath: /healthz
     envVars:
       - key: NODE_VERSION
         value: "22"
