@@ -1,0 +1,40 @@
+{
+  "name": "little-lantern-cafe",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Website for a neighbourhood café: menu, location, opening hours and online pickup ordering.",
+  "scripts": {
+    "build": "webpack --mode production",
+    "dev": "webpack --mode development && node --env-file-if-exists=.env --watch server/index.js",
+    "watch": "webpack --mode development --watch",
+    "start": "node --env-file-if-exists=.env server/index.js",
+    "backup": "node --env-file-if-exists=.env scripts/backup.js",
+    "restore": "node --env-file-if-exists=.env scripts/restore.js",
+    "test": "node --test test/*.test.js",
+    "admin:create": "node --env-file-if-exists=.env scripts/create-admin.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@electric-sql/pglite": "^0.5.11",
+    "express": "^4.22.3",
+    "pg": "^8.23.1"
+  },
+  "devDependencies": {
+    "@babel/core": "^8.0.7",
+    "@babel/preset-env": "^8.0.7",
+    "@babel/preset-react": "^8.0.1",
+    "babel-loader": "^10.1.1",
+    "bootstrap": "^5.3.8",
+    "copy-webpack-plugin": "^14.0.0",
+    "css-loader": "^7.1.5",
+    "html-webpack-plugin": "^5.6.8",
+    "mini-css-extract-plugin": "^2.10.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.30.6",
+    "webpack": "^5.112.0",
+    "webpack-cli": "^7.2.3"
+  }
+}
