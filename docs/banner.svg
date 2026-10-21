@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 400" role="img" aria-labelledby="title desc">
+  <title id="title">Little Lantern Café</title>
+  <desc id="desc">Menu, opening hours and online pickup ordering for a neighbourhood café</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fbf3e7"/>
+      <stop offset="1" stop-color="#f1dcc0"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#f6c77a" stop-opacity=".55"/>
+      <stop offset="1" stop-color="#f6c77a" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1280" height="400" rx="28" fill="url(#bg)"/>
+  <circle cx="1010" cy="200" r="190" fill="url(#glow)"/>
+
+  <!-- Wordmark -->
+  <g transform="translate(88 98)">
+    <rect width="56" height="56" rx="14" fill="#7a3e1d"/>
+    <path d="M21 12h14M28 12v4" stroke="#f6e3c8" stroke-width="3" stroke-linecap="round"/>
+    <path d="M18 19h20l-2 21a4 4 0 0 1-4 3.4h-8A4 4 0 0 1 20 40z" fill="#f6e3c8"/>
+    <ellipse cx="28" cy="31" rx="3.6" ry="5.4" fill="#e9a23b"/>
+    <text x="74" y="40" font-family="Georgia, 'Times New Roman', serif" font-size="30" font-weight="700" fill="#7a3e1d" letter-spacing=".5">LITTLE LANTERN CAFÉ</text>
+  </g>
+  <text x="88" y="230" font-family="Georgia, 'Times New Roman', serif" font-size="58" font-weight="700" fill="#2b211b">Slow coffee, warm bakes,</text>
+  <text x="88" y="296" font-family="Georgia, 'Times New Roman', serif" font-size="58" font-weight="700" fill="#2b211b">ordered ahead.</text>
+  <text x="88" y="346" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="22" fill="#7c6e63">Menu · opening hours · location · online pickup ordering · staff dashboard</text>
+
+  <!-- Cup and croissant -->
+  <g transform="translate(860 70)">
+    <path d="M100 70c-12-15 12-22 0-38M128 64c-12-15 12-22 0-38M156 70c-12-15 12-22 0-38" fill="none" stroke="#c9a888" stroke-width="6" stroke-linecap="round" opacity=".75"/>
+    <ellipse cx="128" cy="262" rx="120" ry="15" fill="#e2c9ad"/>
+    <path d="M40 104h176l-17 128a24 24 0 0 1-24 21H81a24 24 0 0 1-24-21z" fill="#fffaf3" stroke="#2b211b" stroke-width="5"/>
+    <path d="M214 132c38-6 50 50 4 63" fill="none" stroke="#2b211b" stroke-width="12" stroke-linecap="round"/>
+    <path d="M214 132c38-6 50 50 4 63" fill="none" stroke="#fffaf3" stroke-width="4" stroke-linecap="round"/>
+    <ellipse cx="128" cy="106" rx="88" ry="12" fill="#6b3416"/>
+    <path d="M46 154h164" stroke="#e9a23b" stroke-width="10"/>
+    <g transform="translate(230 214)">
+      <path d="M-10 46C-18 6 14-24 52-20c38 4 64 36 54 66-30-10-80-12-116 0z" fill="#e9a23b" stroke="#2b211b" stroke-width="5" stroke-linejoin="round"/>
+      <path d="M22-16c-6 18-6 40 2 58M54-19c-2 20 0 42 6 58M84-6c2 16 4 32 4 46" fill="none" stroke="#b86f17" stroke-width="5" stroke-linecap="round"/>
+    </g>
+  </g>
+</svg>
