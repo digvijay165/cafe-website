@@ -3,6 +3,7 @@
 </p>
 
 <p align="center">
+  <a href="https://little-lantern-cafe.onrender.com"><img alt="Live demo" src="https://img.shields.io/badge/live_demo-little--lantern--cafe-7a3e1d?style=for-the-badge&logo=render&logoColor=white"></a>
   <a href="https://github.com/digvijay165/cafe-website/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/digvijay165/cafe-website/ci.yml?branch=main&style=for-the-badge&label=CI&logo=githubactions&logoColor=white"></a>
   <img alt="React 18" src="https://img.shields.io/badge/React-18-61dafb?style=for-the-badge&logo=react&logoColor=white">
   <img alt="Bootstrap 5" src="https://img.shields.io/badge/Bootstrap-5-7952b3?style=for-the-badge&logo=bootstrap&logoColor=white">
@@ -12,6 +13,7 @@
 </p>
 
 <p align="center">
+  <b><a href="https://little-lantern-cafe.onrender.com">Open the live site</a></b> ·
   <a href="#-features">Features</a> ·
   <a href="#-screenshots">Screenshots</a> ·
   <a href="#-quick-start">Quick start</a> ·
@@ -23,6 +25,8 @@
 ---
 
 **Little Lantern Café** is a complete website for a neighbourhood café. Customers browse the menu, check the opening hours and find the café on a map. They can also **order ahead**: fill a basket, pick a 15-minute pickup slot and pay at the counter. Staff get a live dashboard to move orders from *received* to *ready*, mark items sold out and watch site stats.
+
+> **Live demo:** https://little-lantern-cafe.onrender.com. It runs on Render's free plan, so the first visit after a quiet spell can take about 30 seconds while the server wakes up.
 
 <p align="center">
   <img src="docs/screenshots/home.png" alt="Little Lantern Café home page" width="900">
