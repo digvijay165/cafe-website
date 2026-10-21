@@ -66,7 +66,7 @@ async function main() {
 
   const browser = spawn(CHROME, ['--headless=new', `--remote-debugging-port=${DEBUG_PORT}`, `--user-data-dir=${path.join(temp, 'profile')}`, '--hide-scrollbars', '--no-first-run', 'about:blank'], { stdio: 'ignore' });
   try {
-    await waitFor(`${BASE}/api/health`);
+    await waitFor(`${BASE}/healthz`);
     const targets = await (await waitFor(`http://127.0.0.1:${DEBUG_PORT}/json/list`)).json();
     const page = await connect(targets.find(target => target.type === 'page').webSocketDebuggerUrl);
     await page.send('Page.enable');

@@ -71,7 +71,7 @@ test('menu, info and health are public', async () => {
   assert.ok(menu.body.items.length >= 10);
   const info = await api('GET', '/api/info');
   assert.equal(info.body.hours.week.length, 7);
-  assert.equal((await api('GET', '/api/health')).body.ok, true);
+  assert.equal((await api('GET', '/api/health')).body.status, 'ok');
 });
 
 test('signup validates fields and rejects duplicates', async () => {
@@ -165,6 +165,33 @@ test('deleting an account removes it and its orders', async () => {
   assert.equal((await api('GET', '/api/auth/me')).body.user, null);
   const { rows } = await db.query("select count(*)::int as n from users where email = 'leaving@example.com'");
   assert.equal(rows[0].n, 0);
+});
+
+test('/healthz answers uptime monitors, without rate limits', async () => {
+  const response = await fetch(`${base}/healthz`);
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get('cache-control'), 'no-store');
+  const body = await response.json();
+  assert.equal(body.status, 'ok');
+  assert.equal(body.database, 'ok');
+  assert.equal((await fetch(`${base}/healthz`, { method: 'HEAD' })).status, 200);
+  // Well past the 300/minute API limit for one IP.
+  for (let batch = 0; batch < 16; batch += 1) {
+    const statuses = await Promise.all(Array.from({ length: 20 }, () => fetch(`${base}/healthz`).then(r => r.status)));
+    assert.ok(statuses.every(status => status === 200));
+  }
+});
+
+test('/healthz reports 503 when the database is down', async () => {
+  const ping = db.ping;
+  db.ping = () => Promise.reject(new Error('connection refused'));
+  try {
+    const response = await fetch(`${base}/healthz`);
+    assert.equal(response.status, 503);
+    assert.deepEqual((({ status, database }) => ({ status, database }))(await response.json()), { status: 'error', database: 'unreachable' });
+  } finally {
+    db.ping = ping;
+  }
 });
 
 test('cross-site posts are refused', async () => {

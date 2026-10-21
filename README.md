@@ -141,6 +141,16 @@ docker compose up -d --build
 
 Serve it over HTTPS in production: the session cookie is `Secure`, so logging in only works over HTTPS. Any Node host with a Postgres `DATABASE_URL` works (Railway, Fly.io, AWS, Azure). Run `npm run build`, then `npm start`.
 
+### Uptime monitoring
+
+`GET /healthz` (HEAD works too) returns `200` and `"status": "ok"` when the app can reach its database, and `503` if the database is unreachable or takes longer than 3 seconds. It skips the API rate limits and is never cached.
+
+```json
+{ "status": "ok", "database": "ok", "driver": "postgres", "latencyMs": 4, "uptimeSeconds": 5321, "email": "log" }
+```
+
+On [UptimeRobot](https://uptimerobot.com), add an **HTTP(s)** monitor for `https://<your-site>/healthz` with a 5-minute interval. For a stricter check, use a **Keyword** monitor that alerts when `"status":"ok"` is missing. On Render's free plan, these 5-minute checks also stop the site from going to sleep. Render and Docker use the same endpoint for their own health checks.
+
 ## ✅ Production checklist
 
 | | Item | Where |
